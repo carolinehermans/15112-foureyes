@@ -883,7 +883,8 @@ def updateAll(canvas):
     else:
         data.currImg=img
         drawAll(canvas)
-    canvas.after(15,func=lambda:updateAll(canvas))
+    framerate=150
+    canvas.after(framerate,func=lambda:updateAll(canvas))
 
 ###########################################################
 #################### INIT FUNCTIONS #######################
