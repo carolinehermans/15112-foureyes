@@ -20,6 +20,7 @@ Date     Time Spent        Task
 	 3 hours	   added to csv, designed and formatted “frames for you” and “try 			   them on” UI screens with working back buttons and page buttons
 4/21	 2 hours 	   RESPONSIVE BUTTONS INSTEAD OF JUST RECTANGLES OH DEAR GOD
 	 1 hour 	   more UI + starting on “try them on”
+4/24	 5 hours	   try on is workingish!
 		   		
 Total as of TP1: 24 hours
 Total as of TP2: 36 hours

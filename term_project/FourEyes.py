@@ -4,7 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 
-"""last updated april 22"""
+"""last updated april 24 at 10:06PM"""
 
 ###########################################################
 ################# FACE SHAPE ALGORITHM ####################
@@ -577,24 +577,17 @@ def drawTakeAPhotoScreen(canvas):
 
 def drawInstructionText(canvas):
     #draws take a photo instructions
-    rule1="1. Put your hair back"
-    rule2="2. Put your entire"
-    rule2b="    face in the frame"
-    rule3="3. Make sure there is"
-    rule3b="    light on your face"
+    rule1="1. Hair pushed back"
+    rule2="2. Face in the frame"
+    rule3="3. Blank expression"
+    rules=[rule1,rule2,rule3]
     color=data.accentColor
-    smallspc=50
     spc=100
     font="Verdana 40"
-    x0,y0=715, 225
-    canvas.create_text(x0,y0,anchor="nw",text=rule1,fill=color,font=font)
-    canvas.create_text(x0,y0+spc,anchor="nw",text=rule2,fill=color,font=font)
-    canvas.create_text(x0,y0+spc+smallspc,anchor="nw",text=rule2b,fill=color,
-        font=font)
-    canvas.create_text(x0,y0+spc+smallspc+spc,anchor="nw",text=rule3,fill=color,
-        font=font)
-    canvas.create_text(x0,y0+spc+smallspc+spc+smallspc,anchor="nw",text=rule3b,
-        fill=color,font=font)
+    x0,y0=715, 270
+    for i in xrange(len(rules)):
+        canvas.create_text(x0,y0+spc*i,anchor="nw",font=font,text=rules[i],
+            fill=data.highlightColor)
 
 def drawClickedPhotoIcon(canvas):
     img=ImageTk.PhotoImage(file="clickedcamera.gif")
@@ -778,7 +771,7 @@ def drawTryThemOnScreen(canvas):
     y0=80
     canvas.create_text(data.width/2,y0,anchor="c",text=text,
         font=font,fill=data.highlightColor)
-    x0=205
+    x0=175
     x1=data.width-x0
     y0=150
     y1=data.height-150
@@ -790,11 +783,12 @@ def drawTryThemOnScreen(canvas):
         font="Verdana 25", fill=data.backgroundColor)
 
 def drawTryOnFrame(canvas,img):
-    xoffset=233
-    yoffset=175
-    canvas.create_image(xoffset,yoffset,anchor=NW,image=img)
+    x=1200/2
+    y=800/2
+    canvas.create_image(x,y,anchor="c",image=img)
 
 def drawAll(canvas):
+    canvas.delete(ALL)
     drawBackground(canvas)
     if data.showBestGlasses==True:
         drawBestGlassesScreen(canvas) 
@@ -819,6 +813,102 @@ def drawAll(canvas):
                 dot.draw(canvas)
 
 ###########################################################
+################ OPENCV STUFF FOR TRY-ON ##################
+###########################################################
+
+def detect(img, cascade):
+    rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
+    if len(rects) == 0:
+        return []
+    rects[:,2:] += rects[:,:2]
+    return rects
+
+def putOnGlasses(frame):
+    scale=data.glassesScale
+    filename="glassespics/"+data.faceShape+".png"
+    glasses=cv2.imread(filename,-1)
+    glasses=cv2.resize(glasses,(0,0),fx=scale,fy=scale)
+    w=glasses.shape[1]
+    h=glasses.shape[0]
+    glasses=-glasses
+    for c in xrange(0,3):
+        frameROI=frame[data.glassesy:data.glassesy+glasses.shape[0],data.glassesx:data.glassesx+glasses.shape[1],c] 
+        try:
+            aBigNumber=500
+            newFrameROI=-glasses[:,:,c]*(glasses[:,:,2]/aBigNumber)+frameROI*(1.0 - glasses[:,:,c]/255.0)
+            frame[data.glassesy:data.glassesy+glasses.shape[0],data.glassesx:data.glassesx+glasses.shape[1],c]=newFrameROI
+        except: 
+            frame=frame
+    #cv2.imshow("hi",frame)
+    return frame
+
+def getTwoEyes(eyerects):
+    biggestArea=0
+    biggestEye=None
+    secondBiggestArea=0
+    secondBiggestEye=None
+    if len(eyerects)==2: return eyerects
+    for eye in eyerects:
+        x1,y1,x2,y2=eye
+        currArea=abs(x1-x2)*abs(y1-y2)
+        if currArea>biggestArea:
+            secondBiggestArea=biggestArea
+            secondBiggestEye=biggestEye
+            biggestArea=currArea
+            biggestEye=eye
+    return [biggestEye,secondBiggestEye]
+
+def getAllEyeXsAndYs(frame):
+    gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    eyerects=detect(gray,data.eyeCascade)
+    twoEyes=getTwoEyes(eyerects)
+    return twoEyes
+
+def getBiggestFace(facerects):
+    if len(facerects)==1: return facerects[0]
+    biggestArea=0
+    biggestFace=None
+    for face in facerects:
+        x0,y0,x1,y1=face
+        area=abs(x0-x1)*abs(y0-y1)
+        if area>biggestArea:
+            biggestFace=face
+            biggestArea=area
+    return biggestFace
+
+
+def getEyeXAndY(frame):
+    gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    eyerects=detect(gray,data.eyeCascade)
+    twoEyes=getTwoEyes(eyerects)
+    if twoEyes[0]==None or twoEyes[1]==None: return data.glassesx,data.glassesy
+    x01,y01,x02,y02=twoEyes[0]
+    x11,y11,x12,y12=twoEyes[1]
+    movement=30
+    finalX=((x01+x02)/2+(x11+x12)/2)/2-abs(x01-x11)-movement*data.glassesScale/2
+    finalY=((y01+y02)/2+(y11+y12)/2)/2-abs((y01-y02))+movement*2
+    smoothFactor=10
+    aLargeDistance=20
+    if abs(finalX-data.glassesx)<smoothFactor: finalX=data.glassesx
+    if abs(finalY-data.glassesy)<smoothFactor:finalY=data.glassesy
+    elif abs(finalX-data.glassesx)>aLargeDistance and data.firstFrame==False:finalX=data.glassesx
+    elif abs(finalY-data.glassesy)>aLargeDistance and data.firstFrame==False:finalY=data.glassesy
+    return finalX,finalY
+
+def getGlassesScale(frame):
+    gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    facerects=detect(gray,data.faceCascade)
+    if len(facerects)==0: return 1
+    rect=getBiggestFace(facerects)
+    x0,y0,x1,y1=rect
+    faceWidth=abs(x1-x0)
+    #calculated using my desired values and using a best fit 
+    #linear regression
+    scale=round(0.0035*faceWidth-0.507,1)
+    return scale
+
+
+###########################################################
 ################### UPDATE FUNCTIONS ######################
 ###########################################################
 
@@ -837,18 +927,37 @@ def detectFace(cvFrame):
             biggestFace=x,y,w,h
     #returns four coordinates so that it can draw the face box
     if biggestFaceArea!=0: return biggestFace
-    else: return (220, 100, 260, 280)
+    else: 
+        #if no face is found, it guesses
+        guessx0=170
+        guessy0=100
+        guessx1=240
+        guessy1=230
+        return (guessx0,guessy0,guessx1,guessy1)
 
 def updateTryOnImage():
     #gets new frame from webcam feed every time it's called
-    ret,frame=data.cap.read()
-    frame=cv2.flip(frame,1)
-    if data.pause==True: data.cv2img=frame
+    cap=cv2.VideoCapture(0)
+    width = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    ret,img=cap.read()
+    frame=cv2.flip(img,1)
+    data.frameCounter=0
+    data.prevHorizontalDistances,data.prevVerticalDistances=None,None
+    counter=0
+    #data.x,data.y=400,400
+    eyes="haarcascades/haarcascade_eye.xml"
+    face="haarcascades/haarcascade_frontalface_alt.xml"
+    data.eyeCascade=cv2.CascadeClassifier(eyes)
+    data.faceCascade=cv2.CascadeClassifier(face)
+    data.glassesx,data.glassesy=getEyeXAndY(frame)
+    data.glassesScale=getGlassesScale(frame)
+    frame=putOnGlasses(frame)
+    #converts to tkinter image
+    frame=cv2.resize(frame,(0,0),fx=0.63,fy=0.63)
     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
     img=Image.fromarray(cv2image)
-    h=760
-    desiredW=data.height-70
-    img=img.crop((0,0,desiredW,h))
+    data.firstFrame=False
     #converts to tkinter image
     tkImg=ImageTk.PhotoImage(image=img)
     data.imageLabel._image_cache=tkImg
@@ -883,7 +992,7 @@ def updateAll(canvas):
     else:
         data.currImg=img
         drawAll(canvas)
-    framerate=150
+    framerate=5
     canvas.after(framerate,func=lambda:updateAll(canvas))
 
 ###########################################################
@@ -920,6 +1029,7 @@ def storePhaseBooleans():
     data.photoIconClicked=False
     data.draggingDots=False
 
+
 def makeButtons():
     makeStartButton()
     makeDoneWithDotsButton()
@@ -929,6 +1039,24 @@ def makeButtons():
     makeBrowseFramesButton()
     makeTryThemOnButton()
 
+def initTryOnData():
+    data.glassesImgW=None
+    data.glassesImgH=None
+    width = int(data.cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+    height = int(data.cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+    data.frameCounter=0
+    data.prevHorizontalDistances,data.prevVerticalDistances=None,None
+    data.glasses=None
+    data.glassesScale=1
+    data.glassesTheta=0
+    eyes="haarcascade_eye.xml"
+    face="haarcascade_frontalface_alt.xml"
+    data.eyeCascade=cv2.CascadeClassifier(eyes)
+    data.faceCascade=cv2.CascadeClassifier(face)
+    data.glassesx,data.glassesy=width/2,height/2
+    data.firstFrame=True
+
+
 def run():
     root=tk.Tk()
     global data 
@@ -936,6 +1064,7 @@ def run():
     resetData() 
     storePhaseBooleans() #tells us the phase in the program we're at
     makeButtons()
+    initTryOnData()
     canvas=Canvas(root,width=data.width,height=data.height)
     canvas.bind("<Button-1>",onMouseDown)
     canvas.bind("<B1-Motion>",clickAndDrag)
