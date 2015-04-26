@@ -4,7 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 
-"""last updated april 24 at 10:06PM"""
+"""last updated april 25 at 9:19 PM"""
 
 ###########################################################
 ################# FACE SHAPE ALGORITHM ####################
@@ -144,6 +144,13 @@ class Dot(object):
          and y>self.cy-r and y<self.cy+r):
             return True
         return False
+    def connect(self,other,canvas,clicked=None):
+        if clicked==None: color="white"
+        elif self is clicked or other is clicked:
+            color=rgbString(115,107,153)
+        else: color="white"
+        canvas.create_line((self.cx,self.cy),(other.cx,other.cy),fill=color,
+            width=2,dash=(2,8))
 
 ###########################################################
 ################## MAKE DOTS/BUTTONS ######################
@@ -191,12 +198,12 @@ def makeStartButton():
 
 def makeSeeBestGlassesButton():
     #creates the "see best style for you" button
-    x0=180
+    x0=240
     y0=560
     x1=data.width-x0
     y1=640
     text="See Best Style For You"
-    font="Verdana 50 bold"
+    font="Verdana 43 bold"
     data.seeBestGlassesButton=Button(text=text,font=font,x0=x0,y0=y0,
         x1=x1,y1=y1)
 
@@ -214,7 +221,7 @@ def makeBrowseFramesButton():
     y0=640
     y1=700
     text="Browse These Frames"
-    font="Verdana 40 bold"
+    font="Verdana 35 bold"
     #button
     data.browseFramesButton=Button(text=text,font=font,x0=x0,y0=y0,x1=x1,y1=y1)
 
@@ -225,7 +232,7 @@ def makeTryThemOnButton():
     y0=715
     y1=775
     text="Try Them On"
-    font="Verdana 40 bold"
+    font="Verdana 35 bold"
     data.tryThemOnButton=Button(text=text,font=font,x0=x0,y0=y0,x1=x1,y1=y1)
 
 def makeBrowseFramesBackButton():
@@ -242,10 +249,10 @@ def makeBrowseFramesBackButton():
 def makeTryThemOnBackButton():
     #makes the try them on back button
     x0=30
-    x1=280
+    x1=110
     y0=data.height-20
     y1=data.height-80
-    text="< BACK"
+    text="<"
     font="Verdana 43 bold"
     data.tryThemOnBackButton=Button(text=text,font=font,x0=x0,y0=y0,x1=x1,y1=y1)
 
@@ -337,7 +344,7 @@ def clickTryThemOn(x,y):
 #checks if they've clicked the "browse frames" back button
 def clickBrowseFramesBackButton(x,y):
     x0=30
-    x1=280
+    x1=110
     y0=data.height-120
     y1=data.height-50
     return x>x0 and x<x1 and y>y0 and y<y1
@@ -388,12 +395,33 @@ def havePausedDotsMouseUp(x,y):
             data.takeAPhoto=False
             data.faceShapeInfo=True
 
+def saveCurrentTryOnImage():
+    data.numPhotosTaken+=1
+    title="TryingGlasses"+str(data.numPhotosTaken)+".png"
+    currImg=data.tryOnImage
+    cv2.imwrite(title,currImg)
+
+def clickCameraIcon(x,y):
+    x0=370
+    y0=645
+    x1=x0+157
+    y1=y0+142
+    return x>x0 and x<x1 and y>y0 and y<y1
+
 def tryThemOnMouseUp(x,y):
     if clickTryThemOnBackButton(x,y):
         data.showBestGlasses=True
         data.tryThemOn=False
         data.tryThemOnBackButton.unclicked()
         data.tryThemOnButton.unclicked()
+    if data.cameraClickedTryOn==True:
+        if data.pausedTryOn==False:
+            saveCurrentTryOnImage()
+            data.pausedTryOn=True
+            data.cameraClickedTryOn=False
+        elif data.pausedTryOn==True: 
+            data.pausedTryOn=False
+            data.cameraClickedTryOn=False
 
 def browseFramesMouseUp(x,y):
     if clickBrowseFramesBackButton(x,y):
@@ -474,9 +502,28 @@ def havePausedDotsMouse(x,y):
     if clickDoneWithDots(x,y):
         data.doneWithDotsButton.clicked()
 
+def checkClickGlassesPair(x,y):
+    x0=900
+    x1=1130
+    if x>x0 and x<x1:
+        if y>165 and y<273:
+            data.glassesPair=0
+        elif y>296 and y<402:
+            data.glassesPair=1
+        elif y>431 and y<539:
+            data.glassesPair=2
+        elif y>573 and y<680:
+            data.glassesPair=3
+
 def tryThemOnMouse(x,y):
     if clickTryThemOnBackButton(x,y):
         data.tryThemOnBackButton.clicked()
+    checkClickGlassesPair(x,y)
+    if clickCameraIcon(x,y):
+        if data.cameraClickedTryOn==False:
+            data.cameraClickedTryOn=True
+        else:
+            data.cameraClickedTryOn=False
 
 def browseFramesMouse(x,y):
     if clickBrowseFramesBackButton(x,y):
@@ -549,18 +596,18 @@ def drawStartScreen(canvas):
         fill=data.highlightColor,text=mainText,font=font)
     filler1="Learn which glasses frames will look"
     filler2="the best with your face shape."
-    font="Verdana 35"
+    font="Verdana 30"
     #draws the descriptions
-    canvas.create_text(data.width/2,1.7*data.height/4,anchor="c",
+    canvas.create_text(data.width/2,1.65*data.height/4+5,anchor="c",
         fill=data.accentColor,text=filler1,font=font)
-    canvas.create_text(data.width/2,1.9*data.height/4,anchor="c",
+    canvas.create_text(data.width/2,1.85*data.height/4+5,anchor="c",
         fill=data.accentColor,text=filler2,font=font)
     data.startButton.draw(canvas)
 
 #take a photo screen
 def drawTakeAPhotoScreen(canvas):
     text="Take a Photo"
-    font="Verdana 80 bold"
+    font="Verdana 70 bold"
     canvas.create_text(data.width/2,data.height/8,text=text,font=font,
         fill="white")
     xoffset=30
@@ -621,22 +668,13 @@ def drawDotScreen(canvas):
     drawDotInstructions(canvas)
     data.doneWithDotsButton.draw(canvas)
 
-def drawDots(canvas):
-    #draws the dots themselves
-    drawBackground(canvas)
-    drawFrame(canvas,data.pauseImg)#########
-    for dot in data.dots:
-        print data.clickedDot.n
-        dot.draw(canvas)
-
-
 #draws the instrctions for the dot screen
 def drawDotInstructions(canvas):
     text2="For the best results,"
     text3="match the example as"
     text4="precisely as you can."
     color=data.accentColor
-    font="Verdana 40"
+    font="Verdana 35"
     x=data.offset+880
     y0=590
     spacing=55
@@ -663,9 +701,9 @@ def drawFaceShapeScreen(canvas):
     text2=data.faceShape[0].upper()+data.faceShape[1:]
     filename=str(data.faceShape)+".txt"
     writeup=readFile("shapes/"+filename)
-    font1="Verdana 60"
+    font1="Verdana 50"
     font2="Verdana 170 bold"
-    y0=90
+    y0=70
     spacing=100
     canvas.create_text(data.width/2,y0,anchor="c",text=text1,font=font1,
         fill=data.highlightColor)
@@ -676,9 +714,9 @@ def drawFaceShapeScreen(canvas):
 
 def drawFaceShapeWriteup(canvas,writeup):
     #puts each line of the writup on a different line
-    spacing=50
-    y0=342
-    font="Verdana 45"
+    spacing=48
+    y0=340
+    font="Verdana 35"
     for i in xrange(len(writeup)):
         #this is a fix for a weird bug I get when center aligning text
         if i!=len(writeup)-1: 
@@ -718,10 +756,10 @@ def drawGlassesImage(canvas):
 
 def drawGlassesWriteup(canvas,writeup):
     #puts each line of my writeup on a different line
-    font="Verdana 40"
+    font="Verdana 30"
     color=data.accentColor
-    spacing=44
-    y0=180
+    spacing=48
+    y0=195
     x0=630
     linecounter=0
     for i in xrange(len(writeup)):
@@ -729,7 +767,6 @@ def drawGlassesWriteup(canvas,writeup):
         canvas.create_text(x0,y0+linecounter*spacing,anchor="nw",fill=color,
         font=font,text=line)
         linecounter+=1
-
 
 def drawBrowseFramesPageText(canvas):
     font="Verdana 33 bold"
@@ -765,27 +802,77 @@ def drawBrowseFramesScreen(canvas):
     canvas.create_text(data.width/2,data.height/2,text=temptext,
         font="Verdana 40", fill=data.backgroundColor)
 
+def drawOtherGlassesPairs(canvas):
+    y0=170
+    filename="glassespics/all"+data.faceShape+".gif"
+    #glassespics/alloval.gif
+    img=ImageTk.PhotoImage(file=filename)
+    data.imageLabel3._image_cache=img
+    x=900
+    canvas.create_image(x,y0,anchor="nw",image=img)
+    drawSelectedPair(canvas)
+
+def drawSelectedPair(canvas):
+    x0=900
+    x1=1130
+    color=data.accentColor
+    if data.glassesPair==0:
+        canvas.create_rectangle(x0,170,x1,273,fill=None,width=10,outline=color)
+    elif data.glassesPair==1:
+        canvas.create_rectangle(x0,300,x1,410,fill=None,width=10,outline=color)
+    elif data.glassesPair==2:
+        canvas.create_rectangle(x0,432,x1,547,fill=None,width=10,outline=color)
+    elif data.glassesPair==3:
+        canvas.create_rectangle(x0,575,x1,687,fill=None,width=10,outline=color)
+
+def drawPlayIcon(canvas):
+    img=ImageTk.PhotoImage(file="play.gif")
+    data.imageLabel2._image_cache=img
+    x=370
+    y=645
+    canvas.create_image(x,y,anchor="nw",image=img)
+
+def drawPauseIcon(canvas):
+    if data.pausedTryOn==True:
+        drawPlayIcon(canvas)
+    elif data.cameraClickedTryOn==True:
+            drawClickedPauseButton(canvas)  
+    else:  
+        img=ImageTk.PhotoImage(file="camera.gif")
+        data.imageLabel2._image_cache=img
+        x=370
+        y=645
+        canvas.create_image(x,y,anchor="nw",image=img)
+
+def drawClickedPauseButton(canvas):
+    img=ImageTk.PhotoImage(file="clickedcamera.gif")
+    data.imageLabel2._image_cache=img
+    x=370+5
+    y=645+5
+    canvas.create_image(x,y,anchor="nw",image=img)
+
 def drawTryThemOnScreen(canvas):
-    text="Trying "+getSuggestedFrames()
+    text=getSuggestedFrames()
     font="Verdana 80 bold"
     y0=80
     canvas.create_text(data.width/2,y0,anchor="c",text=text,
         font=font,fill=data.highlightColor)
-    x0=175
-    x1=data.width-x0
+    x0=50
+    x1=data.width-x0-300
     y0=150
-    y1=data.height-150
+    y1=data.height-185
     canvas.create_rectangle(x0,y0,x1,y1,fill=data.accentColor,width=7,
         outline=data.highlightColor)
     data.tryThemOnBackButton.draw(canvas)
-    temptext="Wow look it's your face! And you're wearing glasses!"
-    canvas.create_text(data.width/2,data.height/2,text=temptext,
-        font="Verdana 25", fill=data.backgroundColor)
+    drawSelectedPair(canvas)
+    drawPauseIcon(canvas)
+
 
 def drawTryOnFrame(canvas,img):
-    x=1200/2
-    y=800/2
-    canvas.create_image(x,y,anchor="c",image=img)
+    x=50+20
+    y=150+20
+    canvas.create_image(x,y,anchor="nw",image=img)
+
 
 def drawAll(canvas):
     canvas.delete(ALL)
@@ -796,8 +883,12 @@ def drawAll(canvas):
         drawBrowseFramesScreen(canvas)####
     elif data.tryThemOn==True:
         drawTryThemOnScreen(canvas) 
-        img=updateTryOnImage()
-        drawTryOnFrame(canvas,img)         
+        if data.pausedTryOn==False:
+            img=updateTryOnImage()
+        else:
+            img=data.pausedTryOnImage
+        drawTryOnFrame(canvas,img)  
+        drawOtherGlassesPairs(canvas)       
     elif data.start==False:
         drawStartScreen(canvas)
     else:
@@ -811,35 +902,45 @@ def drawAll(canvas):
             drawFrame(canvas,data.pauseImg)
             for dot in data.dots:
                 dot.draw(canvas)
+            for i in xrange(1,len(data.dots)):
+                data.dots[i].connect(data.dots[i-1],canvas,data.clickedDot)
+            data.dots[0].connect(data.dots[-1],canvas,data.clickedDot)
 
 ###########################################################
 ################ OPENCV STUFF FOR TRY-ON ##################
 ###########################################################
 
 def detect(img, cascade):
-    rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
+    rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, 
+        minSize=(30, 30), flags = cv2.CASCADE_SCALE_IMAGE)
     if len(rects) == 0:
         return []
     rects[:,2:] += rects[:,:2]
     return rects
 
 def putOnGlasses(frame):
+    #here it is
     scale=data.glassesScale
-    filename="glassespics/"+data.faceShape+".png"
+    filename="glassespics/"+data.faceShape+str(data.glassesPair)+".png"
+    #filename="glassespics/oval0.png"
     glasses=cv2.imread(filename,-1)
     glasses=cv2.resize(glasses,(0,0),fx=scale,fy=scale)
     w=glasses.shape[1]
     h=glasses.shape[0]
+    y0=data.glassesy-float(h)/2
+    y1=data.glassesy+float(h)/2
+    x0=data.glassesx-float(w)/2
+    x1=data.glassesx+float(w)/2
     glasses=-glasses
     for c in xrange(0,3):
-        frameROI=frame[data.glassesy:data.glassesy+glasses.shape[0],data.glassesx:data.glassesx+glasses.shape[1],c] 
+        frameROI=(frame[y0:y1,x0:x1,c])
         try:
             aBigNumber=500
-            newFrameROI=-glasses[:,:,c]*(glasses[:,:,2]/aBigNumber)+frameROI*(1.0 - glasses[:,:,c]/255.0)
-            frame[data.glassesy:data.glassesy+glasses.shape[0],data.glassesx:data.glassesx+glasses.shape[1],c]=newFrameROI
+            newFrameROI=(-glasses[:,:,c]*(glasses[:,:,2]/aBigNumber)+frameROI*
+                    (1.0 - glasses[:,:,c]/255.0))
+            (frame[y0:y1,x0:x1,c])=newFrameROI
         except: 
             frame=frame
-    #cv2.imshow("hi",frame)
     return frame
 
 def getTwoEyes(eyerects):
@@ -858,12 +959,6 @@ def getTwoEyes(eyerects):
             biggestEye=eye
     return [biggestEye,secondBiggestEye]
 
-def getAllEyeXsAndYs(frame):
-    gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    eyerects=detect(gray,data.eyeCascade)
-    twoEyes=getTwoEyes(eyerects)
-    return twoEyes
-
 def getBiggestFace(facerects):
     if len(facerects)==1: return facerects[0]
     biggestArea=0
@@ -876,7 +971,6 @@ def getBiggestFace(facerects):
             biggestArea=area
     return biggestFace
 
-
 def getEyeXAndY(frame):
     gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     eyerects=detect(gray,data.eyeCascade)
@@ -885,14 +979,12 @@ def getEyeXAndY(frame):
     x01,y01,x02,y02=twoEyes[0]
     x11,y11,x12,y12=twoEyes[1]
     movement=30
-    finalX=((x01+x02)/2+(x11+x12)/2)/2-abs(x01-x11)-movement*data.glassesScale/2
-    finalY=((y01+y02)/2+(y11+y12)/2)/2-abs((y01-y02))+movement*2
-    smoothFactor=10
-    aLargeDistance=20
+    finalX=((x01+x02)/2+(x11+x12)/2)/2
+    finalY=((y01+y02)/2+(y11+y12)/2)/2
+    smoothFactor=15
+    aLargeDistance=60
     if abs(finalX-data.glassesx)<smoothFactor: finalX=data.glassesx
     if abs(finalY-data.glassesy)<smoothFactor:finalY=data.glassesy
-    elif abs(finalX-data.glassesx)>aLargeDistance and data.firstFrame==False:finalX=data.glassesx
-    elif abs(finalY-data.glassesy)>aLargeDistance and data.firstFrame==False:finalY=data.glassesy
     return finalX,finalY
 
 def getGlassesScale(frame):
@@ -904,9 +996,8 @@ def getGlassesScale(frame):
     faceWidth=abs(x1-x0)
     #calculated using my desired values and using a best fit 
     #linear regression
-    scale=round(0.0035*faceWidth-0.507,1)
+    scale=round(0.003*faceWidth-0.3,1)
     return scale
-
 
 ###########################################################
 ################### UPDATE FUNCTIONS ######################
@@ -943,7 +1034,6 @@ def updateTryOnImage():
     ret,img=cap.read()
     frame=cv2.flip(img,1)
     data.frameCounter=0
-    data.prevHorizontalDistances,data.prevVerticalDistances=None,None
     counter=0
     #data.x,data.y=400,400
     eyes="haarcascades/haarcascade_eye.xml"
@@ -954,7 +1044,14 @@ def updateTryOnImage():
     data.glassesScale=getGlassesScale(frame)
     frame=putOnGlasses(frame)
     #converts to tkinter image
-    frame=cv2.resize(frame,(0,0),fx=0.63,fy=0.63)
+    frame=cv2.resize(frame,(0,0),fx=0.59,fy=0.59)
+    if data.cameraClickedTryOn==True:
+        data.tryOnImage=frame
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img=Image.fromarray(cv2image)
+        tkImg=ImageTk.PhotoImage(image=img)
+        data.imageLabel._image_cache=tkImg
+        data.pausedTryOnImage=tkImg
     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
     img=Image.fromarray(cv2image)
     data.firstFrame=False
@@ -1029,7 +1126,6 @@ def storePhaseBooleans():
     data.photoIconClicked=False
     data.draggingDots=False
 
-
 def makeButtons():
     makeStartButton()
     makeDoneWithDotsButton()
@@ -1049,13 +1145,18 @@ def initTryOnData():
     data.glasses=None
     data.glassesScale=1
     data.glassesTheta=0
-    eyes="haarcascade_eye.xml"
-    face="haarcascade_frontalface_alt.xml"
+    eyes="haarcascades/haarcascade_eye.xml"
+    face="haarcascades/haarcascade_frontalface_alt.xml"
     data.eyeCascade=cv2.CascadeClassifier(eyes)
     data.faceCascade=cv2.CascadeClassifier(face)
     data.glassesx,data.glassesy=width/2,height/2
     data.firstFrame=True
-
+    data.numPhotosTaken=0
+    data.glassesPair=0
+    data.tryOnImage=None
+    data.cameraClickedTryOn=False
+    data.pausedTryOn=False
+    data.clickedDot=None
 
 def run():
     root=tk.Tk()
@@ -1073,6 +1174,10 @@ def run():
     canvas.after(0,func=lambda:updateAll(canvas)) #continually updates 
     data.imageLabel=tk.Label(root)
     data.imageLabel.pack()
+    data.imageLabel2=tk.Label(root)
+    data.imageLabel2.pack()
+    data.imageLabel3=tk.Label(root)
+    data.imageLabel3.pack()
     drawBackground(canvas)
     root.mainloop()
 
