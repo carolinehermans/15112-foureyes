@@ -4,7 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 
-"""last updated april 26 at 8:05 PM"""
+"""last updated april 26 at 8:38 PM"""
 
 ###########################################################
 ################# FACE SHAPE ALGORITHM ####################
@@ -410,7 +410,9 @@ def clickCameraIcon(x,y):
     return x>x0 and x<x1 and y>y0 and y<y1
 
 def tryThemOnMouseUp(x,y):
-    data.ableToClick=True
+    data.browseFramesCantBeClicked=True
+    data.canSeeBestGlasses=False
+    data.browseFrames=False
     if clickTryThemOnBackButton(x,y):
         data.showBestGlasses=True
         data.tryThemOn=False
@@ -419,6 +421,10 @@ def tryThemOnMouseUp(x,y):
         data.pausedTryOn=False
         data.cameraClickedTryOn=False
         data.ableToClick=True
+        data.canSeeBestGlasses=True
+        data.browseFramesCantBeClicked=False
+    else:
+        data.ableToClick=False
     if data.cameraClickedTryOn==True:
         if data.pausedTryOn==False:
             saveCurrentTryOnImage()
@@ -444,22 +450,25 @@ def browseFramesMouseUp(x,y):
         data.pageNumber+=1
 
 def doneWithDotsMouseUp(x,y):
-    if (clickBrowseFrames(x,y) and data.ableToClick==True):
+    if (clickBrowseFrames(x,y) and data.ableToClick==True and data.browseFramesCantBeClicked==False):
         data.canSeeBestGlasses=False
         data.showBestGlasses=False
         data.browseFrames=True
         data.pageNumber=1 
+
         data.ableToClick=False
     elif data.ableToClick==True and clickTryThemOn(x,y):
         data.showBestGlasses=False
         data.tryThemOn=True
         data.ableToClick=False
+        data.browseFramesCantBeClicked=True
     elif clickSeeBestGlasses(x,y) and data.canSeeBestGlasses==True:
         data.canSeeBestGlasses=True
         data.showBestGlasses=True
         data.doneWithDotsButton.unclicked()
         data.ableToClick=True
         data.canSeeBestGlasses=True
+        data.browseFramesCantBeClicked=False
     if data.browseFrames==True:
         data.canSeeBestGlasses=False
         browseFramesMouseUp(x,y)
@@ -903,6 +912,20 @@ def drawTryOnFrame(canvas,img):
     x=50+20
     y=150+20
     canvas.create_image(x,y,anchor="nw",image=img)
+    if data.pausedTryOn==True:
+        text="Picture Saved"
+        color=data.accentColor
+        fontColor=data.backgroundColor
+        font="Avenir 24 bold"
+        x1=data.width-350
+        x0=x1-180
+        y1=data.height-185
+        y0=y1-60
+        canvas.create_rectangle(x0,y0,x1,y1,fill=color,width=7,outline=
+            data.highlightColor)
+        canvas.create_text((x0+x1)/2,(y0+y1)/2,fill=data.backgroundColor,
+            anchor="c",font=font,text=text)
+
 
 
 def drawAll(canvas):
@@ -1158,7 +1181,14 @@ def storePhaseBooleans():
     data.tryThemOn=False #person isn't trying glasses on
     data.browseFrames=False #person isn't browsing frames
     data.photoIconClicked=False
+    data.cameraClickedTryOn=False
+    data.pausedTryOn=False
+    data.clickedDot=None
+    data.shadedPlayButton=False
     data.draggingDots=False
+    data.ableToClick=False
+    data.canSeeBestGlasses=True
+    data.browseFramesCantBeClicked=False
 
 def makeButtons():
     makeStartButton()
@@ -1188,13 +1218,8 @@ def initTryOnData():
     data.numPhotosTaken=0
     data.glassesPair=0
     data.tryOnImage=None
-    data.cameraClickedTryOn=False
-    data.pausedTryOn=False
-    data.clickedDot=None
-    data.shadedPlayButton=False
     data.frameCounter=0
-    data.ableToClick=False
-    data.canSeeBestGlasses=True
+
 
 def run():
     root=tk.Tk()
