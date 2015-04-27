@@ -3,6 +3,7 @@ import Tkinter as tk
 import cv2
 from PIL import Image, ImageTk
 import os
+import csv
 
 """last updated april 27 at 12:17PM"""
 
@@ -151,6 +152,45 @@ class Dot(object):
         else: color="white"
         canvas.create_line((self.cx,self.cy),(other.cx,other.cy),fill=color,
             width=2,dash=(2,8))
+
+class GlassesDisplay(object):
+    def __init__(self,name,shape,price,image,brand,link):
+        self.name=name
+        self.shape=shape
+        self.price=price
+        self.image="browseglasses/"+image
+        self.brand=brand
+        self.link=link
+    def __repr__(self):
+        result=("GlassesDisplay(name="+self.name+", shape="+self.shape+
+            ", price="+self.price+", image="+self.image+", brand="+self.brand+
+            ", link="+self.link+")")
+        return result
+    def draw(self,canvas):
+        pageNumber=self.pageNumber
+        if pageNumber!=data.pageNumber:
+            return
+        left=80
+        top=165
+        xspacing=80
+        yspacing=40
+        width=400
+        height=365/2
+        if self.position==3 or self.position==4: rowNum=2
+        else: rowNum=1
+        if self.position==1 or self.position==3: colNum=1
+        else: colNum=2
+        x0=left+colNum*xspacing+width*(colNum-1)
+        x1=x0+width
+        y0=top+yspacing*rowNum+height*(rowNum-1)
+        y1=y0+height
+        canvas.create_rectangle(x0,y0,x1,y1,fill=data.highlightColor,width=0)
+        self.drawText(canvas,x0,x1,y0,y1)
+    def drawText(self,canvas,x0,x1,y0,y1):
+        pass
+
+
+
 
 ###########################################################
 ################## MAKE DOTS/BUTTONS ######################
@@ -824,24 +864,6 @@ def drawBrowseFramesPageText(canvas):
         canvas.create_text(data.width/2+xspacing,y0,anchor="c",text=">",
             font=font,fill=data.accentColor)
 
-def drawBrowseFramesScreen(canvas):
-    text="Frames For You"
-    font="Helvetica 90 bold"
-    y0=96
-    canvas.create_text(data.width/2,y0,anchor="c",text=text,
-        font=font,fill=data.highlightColor)
-    x0=50
-    x1=data.width-x0
-    y0=165
-    y1=data.height-150
-    canvas.create_rectangle(x0,y0,x1,y1,fill=data.accentColor,width=0)
-    data.browseFramesBackButton.draw(canvas)
-    drawBrowseFramesPageText(canvas)
-    #TEMPORARY
-    temptext="Fancy glasses gallery coming soon!"
-    canvas.create_text(data.width/2,data.height/2,text=temptext,
-        font="Avenir 40", fill=data.backgroundColor)
-
 def drawOtherGlassesPairs(canvas):
     y0=170
     filename="glassespics/all"+data.faceShape+".gif"
@@ -933,7 +955,37 @@ def drawTryOnFrame(canvas,img):
         canvas.create_text((x0+x1)/2,(y0+y1)/2,fill=data.backgroundColor,
             anchor="c",font=font,text=text)
 
+def drawPrettyCsv(canvas,glassesList):
+    for glassesPair in glassesList:
+        glassesPair.draw(canvas)
 
+def drawGlassesPairs(canvas):
+    glassesList=None
+    if data.faceShape=="heart":
+        glassesList=data.glassesForHeart
+    elif data.faceShape=="oval":
+        glassesList=data.glassesForOval
+    elif data.faceShape=="square":
+        glassesList=data.glassesForSquare
+    else:
+        glassesList=data.glassesForRound
+    drawPrettyCsv(canvas,glassesList)
+
+
+def drawBrowseFramesScreen(canvas):
+    text="Frames For You"
+    font="Helvetica 90 bold"
+    y0=96
+    canvas.create_text(data.width/2,y0,anchor="c",text=text,
+        font=font,fill=data.highlightColor)
+    x0=80
+    x1=data.width-x0
+    y0=165
+    y1=data.height-150
+    canvas.create_rectangle(x0,y0,x1,y1,fill=data.accentColor,width=0)
+    data.browseFramesBackButton.draw(canvas)
+    drawBrowseFramesPageText(canvas)
+    drawGlassesPairs(canvas)
 
 def drawAll(canvas):
     canvas.delete(ALL)
@@ -966,6 +1018,48 @@ def drawAll(canvas):
             for i in xrange(1,len(data.dots)):
                 data.dots[i].connect(data.dots[i-1],canvas,data.clickedDot)
             data.dots[0].connect(data.dots[-1],canvas,data.clickedDot)
+
+###########################################################
+################ CSV STUFF FOR BROWSE #####################
+###########################################################
+
+def csvToGlassesDisplayObjects():
+    filename="Glasses.csv"
+    data.glassesForRound=[]
+    data.glassesForSquare=[]
+    data.glassesForOval=[]
+    data.glassesForHeart=[]
+    with open(filename, "rt") as f:
+        for pairOfGlasses in csv.DictReader(f):
+            name=pairOfGlasses["Name"]
+            shape=pairOfGlasses["Shape"]
+            price=pairOfGlasses["Price"]
+            image=pairOfGlasses["Image"]
+            brand=pairOfGlasses["Brand"]
+            link=pairOfGlasses["Link"]
+            newPair=GlassesDisplay(name,shape,price,image,brand,link)
+            if newPair.shape=="Rectangular":
+                data.glassesForRound.append(newPair)
+            elif newPair.shape=="Square":
+                data.glassesForOval.append(newPair)
+            elif newPair.shape=="Round":
+                data.glassesForSquare.append(newPair)
+            else:
+                data.glassesForHeart.append(newPair)
+    giveGlassesDisplayObjectsPositionsAndPageNumbers(data.glassesForRound)
+    giveGlassesDisplayObjectsPositionsAndPageNumbers(data.glassesForSquare)
+    giveGlassesDisplayObjectsPositionsAndPageNumbers(data.glassesForOval)
+    giveGlassesDisplayObjectsPositionsAndPageNumbers(data.glassesForHeart)
+
+def giveGlassesDisplayObjectsPositionsAndPageNumbers(glassesList):
+    data.numSpots=4
+    counter=0
+    for i in xrange(1,data.totalPages+1):
+        for j in xrange(1,data.numSpots+1):
+            glassesList[counter].pageNumber=i
+            glassesList[counter].position=j
+            counter+=1
+
 
 ###########################################################
 ################ OPENCV STUFF FOR TRY-ON ##################
@@ -1178,6 +1272,7 @@ def resetData():
     data.accentColor=rgbString(195,186,235)
     data.highlightColor=rgbString(255,255,255)
     data.faceShape=None
+    csvToGlassesDisplayObjects()
 
 def storePhaseBooleans():
     data.start=False
