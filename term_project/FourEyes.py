@@ -4,7 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 
-"""last updated april 26 at 8:38 PM"""
+"""last updated april 27 at 12:17PM"""
 
 ###########################################################
 ################# FACE SHAPE ALGORITHM ####################
@@ -238,21 +238,21 @@ def makeTryThemOnButton():
 
 def makeBrowseFramesBackButton():
     #makes the back button for the browse frames screen
-    x0=30
-    x1=280
+    x0=50
+    x1=150
     y0=data.height-50
     y1=data.height-120
-    text="< BACK"
-    font="Helvetica 50 bold"
+    text="<"
+    font="Helvetica 43 bold"
     data.browseFramesBackButton=Button(text=text,font=font,
         x0=x0,y0=y0,x1=x1,y1=y1)
 
 def makeTryThemOnBackButton():
     #makes the try them on back button
-    x0=30
-    x1=110
-    y0=data.height-20
-    y1=data.height-80
+    x0=48
+    x1=138
+    y0=data.height-33
+    y1=data.height-103
     text="<"
     font="Helvetica 43 bold"
     data.tryThemOnBackButton=Button(text=text,font=font,x0=x0,y0=y0,x1=x1,y1=y1)
@@ -270,15 +270,19 @@ def rgbString(red, green, blue):
 def getSuggestedFrames():
     if data.faceShape=="oval":
         data.glasses=["Square","Rectangular"]
+        data.glassesType= "Square Frames"
         return "Square Frames"
     elif data.faceShape=="heart":
         data.glasses=["Rimless","Wire"]
+        data.glassesType= "Thin Frames"
         return "Thin Frames"
     elif data.faceShape=="square":
         data.glasses=["Oval","Round"]
+        data.glassesType= "Rounded Frames"
         return "Rounded Frames"
     elif data.faceShape=="round":
         data.glasses=["Rectangular"]
+        data.glassesType= "Rectangular Frames"
         return "Rectangular Frames"
 
 #modified version of the function in the course notes, returns .txt file as a
@@ -344,8 +348,8 @@ def clickTryThemOn(x,y):
 
 #checks if they've clicked the "browse frames" back button
 def clickBrowseFramesBackButton(x,y):
-    x0=30
-    x1=280
+    x0=50
+    x1=150
     y0=data.height-120
     y1=data.height-50
     return x>x0 and x<x1 and y>y0 and y<y1
@@ -369,10 +373,10 @@ def clickNextPage(x,y):
     return x>x0-r and x<x0+r and y>y0-r and y<y0+r
 
 def clickTryThemOnBackButton(x,y):
-    x0=30
-    x1=110
-    y0=data.height-20
-    y1=data.height-80
+    x0=48
+    x1=138
+    y0=data.height-33
+    y1=data.height-103
     return x>x0 and x<x1 and y<y0 and y>y1
 
 def haventStartedMouseUp(x,y):
@@ -392,7 +396,10 @@ def havePausedDotsMouseUp(x,y):
     if clickDoneWithDots(x,y):
         data.doneWithDotsButton.clicked()
         faceDimensions=getFaceDimensions(data.dots)
-        data.faceShape=getFaceShape(faceDimensions)
+        if data.faceShape==None:
+            data.faceShape=getFaceShape(faceDimensions)
+        if data.glassesType==None:
+            getSuggestedFrames()
         data.takeAPhoto=False
         data.faceShapeInfo=True
 
@@ -709,8 +716,8 @@ def drawDotInstructions(canvas):
     color=data.accentColor
     font="Avenir 35"
     x=70+880
-    y0=560
-    spacing=48
+    y0=575
+    spacing=45
     canvas.create_text(x,y0,anchor="c",text=text2,font=font,fill=color)
     canvas.create_text(x,y0+spacing,anchor="c",text=text3,font=font,fill=color)
     canvas.create_text(x,y0+2*spacing,anchor="c",text=text4,font=font,
@@ -720,10 +727,10 @@ def drawDotInstructions(canvas):
 #draws the little picture of the dude I drew to show people how to 
 #drag dots
 def drawInstructionImage(canvas):
-    img=ImageTk.PhotoImage(file="tpFace.gif")
+    img=ImageTk.PhotoImage(file="tpFace2.gif")
     data.imageLabel._image_cache=img
     x=70+715
-    y=190
+    y=175
     canvas.create_image(x,y,anchor="nw",image=img)
 
 #next screen: tell them their face shape
@@ -768,7 +775,7 @@ def drawBestGlassesScreen(canvas):
     writeup=readFile(filepath)
     font="Helvetica 90 bold"
     #finds the suggested frames for the person
-    suggestedFrames=getSuggestedFrames()
+    suggestedFrames=data.glassesType
     y0=96
     #tells the person their suggested frames
     canvas.create_text(data.width/2,y0,text=suggestedFrames,font=font,
@@ -892,7 +899,7 @@ def drawClickedPauseButton(canvas):
     canvas.create_image(x,y,anchor="nw",image=img)
 
 def drawTryThemOnScreen(canvas):
-    text=getSuggestedFrames()
+    text=data.glassesType    
     font="Helvetica 80 bold"
     y0=80
     canvas.create_text(data.width/2,y0,anchor="c",text=text,
@@ -976,6 +983,7 @@ def putOnGlasses(frame):
     #here it is
     scale=data.glassesScale
     filename="glassespics/"+data.faceShape+str(data.glassesPair)+".png"
+    #filename="glassespics/oval4.png"
     glasses=cv2.imread(filename,-1)
     glasses=cv2.resize(glasses,(0,0),fx=scale,fy=scale)
     w=glasses.shape[1]
@@ -1169,6 +1177,7 @@ def resetData():
     data.backgroundColor=rgbString(66,51,98)
     data.accentColor=rgbString(195,186,235)
     data.highlightColor=rgbString(255,255,255)
+    data.faceShape=None
 
 def storePhaseBooleans():
     data.start=False
@@ -1189,6 +1198,7 @@ def storePhaseBooleans():
     data.ableToClick=False
     data.canSeeBestGlasses=True
     data.browseFramesCantBeClicked=False
+    data.glassesType=None
 
 def makeButtons():
     makeStartButton()
