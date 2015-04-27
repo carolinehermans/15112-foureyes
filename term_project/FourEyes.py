@@ -4,7 +4,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 
-"""last updated april 25 at 1:24 AM"""
+"""last updated april 26 at 8:05 PM"""
 
 ###########################################################
 ################# FACE SHAPE ALGORITHM ####################
@@ -175,7 +175,7 @@ def makeDots():
     smallspc=w/8
     medspc=w/5
     bigspc=w/4
-    offset=data.offset
+    offset=100
     yoffset=200
     color="white"
     dot1=Dot(x=x+w/2+offset,y=y-smallspc+yoffset,n=0,color=color) 
@@ -199,9 +199,9 @@ def makeStartButton():
 def makeSeeBestGlassesButton():
     #creates the "see best style for you" button
     x0=290
-    y0=560
+    y0=590
     x1=data.width-x0
-    y1=640
+    y1=690
     text="See Best Style For You"
     font="Helvetica 43 bold"
     data.seeBestGlassesButton=Button(text=text,font=font,x0=x0,y0=y0,
@@ -209,7 +209,8 @@ def makeSeeBestGlassesButton():
 
 def makeDoneWithDotsButton():
     #creates the "done" button for users to press after they're done with dots
-    x0,y0,x1,y1=230,690,470,760
+    midx=(80+720)/2
+    x0,y0,x1,y1=midx-90,703,midx+90,773
     text="DONE"
     font="Helvetica 43 bold"
     data.doneWithDotsButton=Button(text=text,font=font,x0=x0,y0=y0,x1=x1,y1=y1)
@@ -218,8 +219,8 @@ def makeBrowseFramesButton():
     #makes the buttons for users to browse frames
     x0=360
     x1=data.width-x0
-    y0=640
-    y1=700
+    y0=615
+    y1=680
     text="Browse These Frames"
     font="Helvetica 35 bold"
     #button
@@ -229,8 +230,8 @@ def makeTryThemOnButton():
     #makes the button for people to try on glasses
     x0=360
     x1=data.width-x0
-    y0=715
-    y1=775
+    y0=695
+    y1=760
     text="Try Them On"
     font="Helvetica 35 bold"
     data.tryThemOnButton=Button(text=text,font=font,x0=x0,y0=y0,x1=x1,y1=y1)
@@ -304,10 +305,10 @@ def clickInStartButton(x,y):
 
 #checks if they've taken a photo
 def clickInPhotoButton(x,y):
-    x0=900-100
-    x1=900+100
-    y0=data.height-data.height/8-100
-    y1=data.height-data.height/8+100
+    x0=940-100
+    x1=940+100
+    y0=600-100
+    y1=600+100
     if x>x0 and x<x1 and y>y0 and y<y1: return True
     return False
 
@@ -321,24 +322,24 @@ def clickSeeBestGlasses(x,y):
 
 #checks if they've clicked the "browse frames" button
 def clickBrowseFrames(x,y):
-    x0=320
+    x0=360
     x1=data.width-x0
-    y0=640
-    y1=700
+    y0=615
+    y1=680
     return x>x0 and x<x1 and y>y0 and y<y1
 
 #checks if they've clicked the "done with dots" button
 def clickDoneWithDots(x,y):
-    x0,y0,x1,y1=(data.doneWithDotsButton.x0,data.doneWithDotsButton.y0,
-            data.doneWithDotsButton.x1,data.doneWithDotsButton.y1)
+    midx=(80+720)/2
+    x0,y0,x1,y1=midx-90,703,midx+90,773
     if x>x0 and x<x1 and y>y0 and y<y1: return True
 
 #checks if they've clicked the "try them on" button
 def clickTryThemOn(x,y):
-    x0=320
+    x0=360
     x1=data.width-x0
-    y0=715
-    y1=775
+    y0=695
+    y1=760
     return x>x0 and x<x1 and y>y0 and y<y1
 
 #checks if they've clicked the "browse frames" back button
@@ -409,6 +410,7 @@ def clickCameraIcon(x,y):
     return x>x0 and x<x1 and y>y0 and y<y1
 
 def tryThemOnMouseUp(x,y):
+    data.ableToClick=True
     if clickTryThemOnBackButton(x,y):
         data.showBestGlasses=True
         data.tryThemOn=False
@@ -416,6 +418,7 @@ def tryThemOnMouseUp(x,y):
         data.tryThemOnButton.unclicked()
         data.pausedTryOn=False
         data.cameraClickedTryOn=False
+        data.ableToClick=True
     if data.cameraClickedTryOn==True:
         if data.pausedTryOn==False:
             saveCurrentTryOnImage()
@@ -427,30 +430,40 @@ def tryThemOnMouseUp(x,y):
             data.shadedPlayButton=False
 
 def browseFramesMouseUp(x,y):
+    data.canSeeBestGlasses=False
     if clickBrowseFramesBackButton(x,y):
         data.showBestGlasses=True
         data.browseFrames=False
         data.browseFramesBackButton.unclicked()
         data.browseFramesButton.unclicked()
-    elif clickPreviousPage(x,y):
+        data.ableToClick=True
+        data.canSeeBestGlasses=True
+    if clickPreviousPage(x,y):
         data.pageNumber-=1
-    elif clickNextPage(x,y):
+    if clickNextPage(x,y):
         data.pageNumber+=1
 
 def doneWithDotsMouseUp(x,y):
-    if clickSeeBestGlasses(x,y):
-        data.showBestGlasses=True
-        data.doneWithDotsButton.unclicked()
-    if data.showBestGlasses==True and clickBrowseFrames(x,y):
+    if (clickBrowseFrames(x,y) and data.ableToClick==True):
+        data.canSeeBestGlasses=False
         data.showBestGlasses=False
         data.browseFrames=True
-        data.pageNumber=1 #resets browse frames page number to 1 every time
-    if data.showBestGlasses==True and clickTryThemOn(x,y):
+        data.pageNumber=1 
+        data.ableToClick=False
+    elif data.ableToClick==True and clickTryThemOn(x,y):
         data.showBestGlasses=False
         data.tryThemOn=True
+        data.ableToClick=False
+    elif clickSeeBestGlasses(x,y) and data.canSeeBestGlasses==True:
+        data.canSeeBestGlasses=True
+        data.showBestGlasses=True
+        data.doneWithDotsButton.unclicked()
+        data.ableToClick=True
+        data.canSeeBestGlasses=True
     if data.browseFrames==True:
+        data.canSeeBestGlasses=False
         browseFramesMouseUp(x,y)
-    if data.tryThemOn==True:
+    elif data.tryThemOn==True:
         tryThemOnMouseUp(x,y)
 
 #moves the dots around when the mouse is released
@@ -519,6 +532,7 @@ def checkClickGlassesPair(x,y):
             data.glassesPair=3
 
 def tryThemOnMouse(x,y):
+    data.ableToClick=True
     if clickTryThemOnBackButton(x,y):
         data.tryThemOnBackButton.clicked()
     checkClickGlassesPair(x,y)
@@ -531,16 +545,19 @@ def tryThemOnMouse(x,y):
             data.cameraClickedTryOn=True
 
 def browseFramesMouse(x,y):
+    data.canHitBrowseFrames=False
+    #data.ableToClick=True
     if clickBrowseFramesBackButton(x,y):
         data.browseFramesBackButton.clicked()
+        data.canHitBrowseFrames=True
 
 def doneWithDotsMouse(x,y):
-    if clickSeeBestGlasses(x,y):
-        data.seeBestGlassesButton.clicked()
     if data.showBestGlasses==True and clickBrowseFrames(x,y):
         data.browseFramesButton.clicked()
     if data.showBestGlasses==True and clickTryThemOn(x,y):
         data.tryThemOnButton.clicked()
+    if clickSeeBestGlasses(x,y):
+        data.seeBestGlassesButton.clicked()
     if data.browseFrames==True:
         browseFramesMouse(x,y)
     if data.tryThemOn==True:
@@ -585,8 +602,8 @@ def drawBackground(canvas):
 
 def drawFrame(canvas,img):
     #draws the webcam feed
-    xoffset=50
-    yoffset=200
+    xoffset=100
+    yoffset=209
     canvas.create_image(xoffset,yoffset,anchor=NW,image=img)
 
 def drawStartScreen(canvas):
@@ -595,7 +612,7 @@ def drawStartScreen(canvas):
     #canvas.create_rectangle(0,0,data.width*2,data.height*2,
        # fill=data.backgroundColor,width=0)
     mainText="FourEyes"
-    font="MindBlue 160 bold"
+    font="Avenir 125 bold"
     #draws the title
     canvas.create_text(data.width/2,data.height/4,anchor="c",
         fill=data.highlightColor,text=mainText,font=font)
@@ -603,9 +620,9 @@ def drawStartScreen(canvas):
     filler2="the best with your face shape."
     font="Avenir 34"
     #draws the descriptions
-    canvas.create_text(data.width/2,1.65*data.height/4+25,anchor="c",
+    canvas.create_text(data.width/2,1.65*data.height/4-5,anchor="c",
         fill=data.accentColor,text=filler1,font=font)
-    canvas.create_text(data.width/2,1.9*data.height/4+25,anchor="c",
+    canvas.create_text(data.width/2,1.9*data.height/4-5,anchor="c",
         fill=data.accentColor,text=filler2,font=font)
     data.startButton.draw(canvas)
 
@@ -615,10 +632,10 @@ def drawTakeAPhotoScreen(canvas):
     font="Helvetica 90 bold"
     canvas.create_text(data.width/2,data.height/8,text=text,font=font,
         fill="white")
-    xoffset=30
-    yoffset=180
-    x2=670
-    y2=670
+    xoffset=80
+    yoffset=188
+    x2=720
+    y2=680
     canvas.create_rectangle(xoffset,yoffset,x2,y2,fill=data.accentColor,width=7,
         outline=data.highlightColor)
     drawInstructionText(canvas)
@@ -636,7 +653,7 @@ def drawInstructionText(canvas):
     color=data.accentColor
     spc=100
     font="Avenir 40"
-    x0,y0=715, 270
+    x0,y0=763, 229
     for i in xrange(len(rules)):
         canvas.create_text(x0,y0+spc*i,anchor="nw",font=font,text=rules[i],
             fill=data.highlightColor)
@@ -644,16 +661,18 @@ def drawInstructionText(canvas):
 def drawClickedPhotoIcon(canvas):
     img=ImageTk.PhotoImage(file="clickedcamera.gif")
     data.imageLabel._image_cache=img
-    x=900+5
-    canvas.create_image(x,data.height-data.height/8+5,
+    x=940+5
+    y=600+5
+    canvas.create_image(x,y,
         anchor="c",image=img)
 
 def drawPhotoIcon(canvas):
     #the button to take a photo
     img=ImageTk.PhotoImage(file="camera.gif")
     data.imageLabel._image_cache=img
-    x=900
-    canvas.create_image(x,data.height-data.height/8,
+    x=940
+    y=600
+    canvas.create_image(x,y,
         anchor="c",image=img)
 
 #the screen for dragging the dots
@@ -664,10 +683,10 @@ def drawDotScreen(canvas):
     color=data.highlightColor
     canvas.create_text(data.width/2,data.height/8,text=text,font=font,
         fill=color)
-    xoffset=30
-    yoffset=180
-    x2=670
-    y2=670
+    xoffset=80
+    yoffset=188
+    x2=720
+    y2=680
     canvas.create_rectangle(xoffset,yoffset,x2,y2,fill=data.accentColor,width=7,
         outline=data.highlightColor)
     drawDotInstructions(canvas)
@@ -680,9 +699,9 @@ def drawDotInstructions(canvas):
     text4="precisely as you can."
     color=data.accentColor
     font="Avenir 35"
-    x=data.offset+880
-    y0=590
-    spacing=52
+    x=70+880
+    y0=560
+    spacing=48
     canvas.create_text(x,y0,anchor="c",text=text2,font=font,fill=color)
     canvas.create_text(x,y0+spacing,anchor="c",text=text3,font=font,fill=color)
     canvas.create_text(x,y0+2*spacing,anchor="c",text=text4,font=font,
@@ -694,7 +713,7 @@ def drawDotInstructions(canvas):
 def drawInstructionImage(canvas):
     img=ImageTk.PhotoImage(file="tpFace.gif")
     data.imageLabel._image_cache=img
-    x=data.offset+715
+    x=70+715
     y=190
     canvas.create_image(x,y,anchor="nw",image=img)
 
@@ -708,7 +727,7 @@ def drawFaceShapeScreen(canvas):
     writeup=readFile("shapes/"+filename)
     font1="Helvetica 50 "
     font2="Avenir 170 bold"
-    y0=75
+    y0=100
     spacing=125
     canvas.create_text(data.width/2,y0,anchor="c",text=text1,font=font1,
         fill=data.highlightColor)
@@ -720,7 +739,7 @@ def drawFaceShapeScreen(canvas):
 def drawFaceShapeWriteup(canvas,writeup):
     #puts each line of the writup on a different line
     spacing=48
-    y0=355
+    y0=380
     font="Avenir 35"
     for i in xrange(len(writeup)):
         #this is a fix for a weird bug I get when center aligning text
@@ -741,7 +760,7 @@ def drawBestGlassesScreen(canvas):
     font="Helvetica 90 bold"
     #finds the suggested frames for the person
     suggestedFrames=getSuggestedFrames()
-    y0=90
+    y0=96
     #tells the person their suggested frames
     canvas.create_text(data.width/2,y0,text=suggestedFrames,font=font,
         fill=data.highlightColor)
@@ -755,8 +774,8 @@ def drawGlassesImage(canvas):
     filename="recphotos/"+data.faceShape+".gif"
     img=ImageTk.PhotoImage(file=filename)
     data.imageLabel._image_cache=img
-    x=50
-    y=200
+    x=75
+    y=195
     canvas.create_image(x,y,anchor="nw",image=img)
 
 def drawGlassesWriteup(canvas,writeup):
@@ -764,8 +783,8 @@ def drawGlassesWriteup(canvas,writeup):
     font="Avenir 35"
     color=data.accentColor
     spacing=48
-    y0=190
-    x0=645
+    y0=185
+    x0=665
     linecounter=0
     for i in xrange(len(writeup)):
         line=writeup[i]
@@ -791,13 +810,13 @@ def drawBrowseFramesPageText(canvas):
 
 def drawBrowseFramesScreen(canvas):
     text="Frames For You"
-    font="Helvetica 80 bold"
-    y0=80
+    font="Helvetica 90 bold"
+    y0=96
     canvas.create_text(data.width/2,y0,anchor="c",text=text,
         font=font,fill=data.highlightColor)
     x0=50
     x1=data.width-x0
-    y0=150
+    y0=165
     y1=data.height-150
     canvas.create_rectangle(x0,y0,x1,y1,fill=data.accentColor,width=0)
     data.browseFramesBackButton.draw(canvas)
@@ -813,13 +832,13 @@ def drawOtherGlassesPairs(canvas):
     #glassespics/alloval.gif
     img=ImageTk.PhotoImage(file=filename)
     data.imageLabel3._image_cache=img
-    x=900
+    x=915
     canvas.create_image(x,y0,anchor="nw",image=img)
     drawSelectedPair(canvas)
 
 def drawSelectedPair(canvas):
-    x0=900
-    x1=1130
+    x0=915
+    x1=1145
     color=data.accentColor
     if data.glassesPair==0:
         canvas.create_rectangle(x0,170,x1,273,fill=None,width=10,outline=color)
@@ -983,31 +1002,39 @@ def getBiggestFace(facerects):
     return biggestFace
 
 def getEyeXAndY(frame):
-    gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    eyerects=detect(gray,data.eyeCascade)
-    twoEyes=getTwoEyes(eyerects)
-    if twoEyes[0]==None or twoEyes[1]==None: return data.glassesx,data.glassesy
-    x01,y01,x02,y02=twoEyes[0]
-    x11,y11,x12,y12=twoEyes[1]
-    movement=30
-    finalX=((x01+x02)/2+(x11+x12)/2)/2
-    finalY=((y01+y02)/2+(y11+y12)/2)/2
-    smoothFactor=15
-    aLargeDistance=60
-    if abs(finalX-data.glassesx)<smoothFactor: finalX=data.glassesx
-    if abs(finalY-data.glassesy)<smoothFactor:finalY=data.glassesy
-    return finalX,finalY
+    finalX,finalY=0,0
+    if data.frameCounter%10==0:
+        gray=cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        eyerects=detect(gray,data.eyeCascade)
+        twoEyes=getTwoEyes(eyerects)
+        if twoEyes[0]==None or twoEyes[1]==None: return data.glassesx,data.glassesy
+        x01,y01,x02,y02=twoEyes[0]
+        x11,y11,x12,y12=twoEyes[1]
+        movement=30
+        finalX=((x01+x02)/2+(x11+x12)/2)/2
+        finalY=((y01+y02)/2+(y11+y12)/2)/2
+        smoothFactor=15
+        aLargeDistance=60
+        if abs(finalX-data.glassesx)<smoothFactor: finalX=data.glassesx
+        if abs(finalY-data.glassesy)<smoothFactor:finalY=data.glassesy
+    if finalX!=0 and finalY!=0:
+        return finalX,finalY
+    else:
+        return data.glassesX,data.glassesY
 
 def getGlassesScale(frame):
-    gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-    facerects=detect(gray,data.faceCascade)
-    if len(facerects)==0: return 1
-    rect=getBiggestFace(facerects)
-    x0,y0,x1,y1=rect
-    faceWidth=abs(x1-x0)
-    #calculated using my desired values and using a best fit 
-    #linear regression
-    scale=round(0.003*faceWidth-0.3,1)
+    scale=1
+    if data.frameCounter%10==0:
+        gray=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        facerects=detect(gray,data.faceCascade)
+        if len(facerects)==0: return 1
+        rect=getBiggestFace(facerects)
+        x0,y0,x1,y1=rect
+        faceWidth=abs(x1-x0)
+        #calculated using my desired values and using a best fit 
+        #linear regression
+        scale=round(0.003*faceWidth-0.3,1)
+    data.frameCounter+=1
     return scale
 
 ###########################################################
@@ -1064,6 +1091,7 @@ def updateTryOnImage():
     tkImg=ImageTk.PhotoImage(image=img)
     data.pausedTryOnImage=tkImg
     data.imageLabel._image_cache=tkImg
+    data.frameCounter+=1
     return tkImg
 
 def updateImage():
@@ -1164,6 +1192,9 @@ def initTryOnData():
     data.pausedTryOn=False
     data.clickedDot=None
     data.shadedPlayButton=False
+    data.frameCounter=0
+    data.ableToClick=False
+    data.canSeeBestGlasses=True
 
 def run():
     root=tk.Tk()

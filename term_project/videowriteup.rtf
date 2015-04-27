@@ -6,11 +6,11 @@
 
 \f0\fs24 \cf0 \
 Hello! my name is Caroline Hermans and this is FourEyes, my term project for 15-112 at Carnegie Mellon University. Essentially, FourEyes uses math to help people decide which style of glasses to wear. \
-I touch on both my calculations and my research in this demonstration, but if you\'92re still curious about those things when I\'92m done, I\'92ve attached a few extras to the end of this video.\
+I touch on both my calculations and my research in this demonstration, but if you\'92re still curious about those things when I\'92m done, I\'92ve left a few extras in the video description.\
 \
 So, let\'92s take a photo! \
 \
-And, there I am. In this screen, I guide the user through taking a good picture so my program can give them the most accurate results. FourEyes will still detect their face even if they take a bad picture, but the next step is easier on the user side if they take a good one. This looks pretty good, so let\'92s click this button.\
+And, there I am. In this screen, I guide the user through taking a good picture so my program can give them the most accurate results. Their face will still be detected even if they take a bad picture, but the next step is easier on the user side if they take a good one. This looks pretty good, so let\'92s click this button.\
 \
 Awesome, we\'92ve taken our picture. First, let me explain what just happened. We paused the webcam feed and saved the last frame. My program then used OpenCV face detection on that image to make a pretty accurate guess as to the location of these six key points on the user\'92s face: the hairline, the sides of the face lined up with the eyebrows, the jawline, and the point of the chin. These six points allow me to compute the user\'92s primary face shape: either square, round, heart, or oval. After we adjust these dots a bit, we can click done.\
 \
@@ -20,12 +20,12 @@ Now If we click this button down here, we can look at the recommended glasses st
 \
 Looks like I should wear square frames! In this step, my program recommends the frame that is universally considered  most flattering on the user\'92s calculated face shape according to many beauty websites and glasses store websites. It also supplies the user with a short summary of why this particular style of frames will complement their features. From there, we can take a look at the \'93Browse Frames\'94 or the \'93Try Them On\'94 feature.  I think \'93Try Them On\'94 is pretty fun, so let\'92s do that first. \
 \
-Here, we can see a generic pair of glasses in my recommended glasses style overlaid on my face in real time with face tracking. If I move my head around, the glasses move with me, if I move my head closer, they resize. Here, my program is continually tracking the both centers of my eyes and the width of my face. The locations of the centers of my eyes are determining the x and y position of the glasses, and the width of my face is determining the size of the glasses. When my face is closer, the width of my face is larger, and the glasses are sized accordingly.  Here on the side, we have three alternative options for different types of square frames  to try on. I can also take pictures whenever I want and save them to my desktop. That\'92s the try them on feature. Let\'92s go back to the previous screen.\
+Here, we can see a generic pair of glasses in my recommended glasses style overlaid on my face in real time with face tracking. If I move my head around, the glasses move with me, if I move my head closer, they resize. Here, my program is continually tracking the both centers of my eyes and the width of my face. The locations of the centers of my eyes are determining the x and y position of the glasses, and the width of my face is determining the size of the glasses. When my face is closer, the width of my face is larger, and the glasses are sized accordingly.  Here on the side, we have four different options for different types of square frames  to try on. If I click through them, the glasses I\'92m wearing change. I can also take pictures whenever I want, and save them to my desktop. Then, I can resume trying them on. If I take a few different ones like so, we can take a look at these photos. That\'92s the try them on feature. Let\'92s go back to the previous screen.\
 \
 Finally, if the user wishes to get more specific with the type of frames they\'92re looking for, they can view a gallery of commercially available recommended frames by clicking the \'93Browse These Frames\'94 button below.\
 \
-Here, the user is presented with a multitude of glasses specifically in their recommended style. Each pair has an image, name, brand, link, and price associated with it, and all of the glasses as a whole are sorted according to price. This information is stored in a CSV file, and simply read in and reformatted. Additionally, if we click on one of these frames, it will take us to a website where we can actually purchase the glasses. This way, the user can get an idea of what specific frames they might like within their broader recommended style.\
+Here, the user is presented with a multitude of glasses specifically in their recommended style. Each pair has an image, name, brand, link, and price associated with it, and all of the glasses as a whole are sorted according to price. This information is stored in a CSV file, and simply read in and reformatted. Additionally, if we click on one of these frames, it will take us to a website where we can actually purchase the glasses. \
 \
-And, that\'92s my term project. I hope it\'92s fun to use and that it can help some people make decisions. Thank you so much for watching!\
+And that is my term project. I hope it\'92s fun to use and that it can help some people make decisions. Thank you so much for watching!\
 \
 }
