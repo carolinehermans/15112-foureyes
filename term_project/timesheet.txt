@@ -25,6 +25,7 @@ Date     Time Spent        Task
 	 2 hours 	   is it still 4/25 if it’s 1AM
 4/26	 2 hours	   oh my god i fixed the design and the UI bugs so well 
 	 2 hours	   redid a bunch of the try on images
+4/27	 4 hours	   all of browse frames is perf
 		   		
 Total as of TP1: 24 hours
 Total as of TP2: 36 hours
