@@ -6,7 +6,7 @@ import os
 import csv
 import webbrowser
 
-"""last updated april 27 at 9:36PM"""
+"""last updated april 28 at 1:54 PM"""
 
 ###########################################################
 ################# FACE SHAPE ALGORITHM ####################
@@ -133,7 +133,7 @@ class DarkerButton(Button):
         #allows for formatting of how button text looks
         self.text=text 
         self.font=font
-        self.fontColor=data.accentColor
+        self.fontColor=rgbString(115,107,153)
         self.x0=x0
         self.x1=x1
         self.y0=y0
@@ -141,17 +141,36 @@ class DarkerButton(Button):
         self.buttonInset=4 #how much it sets into the screen when clicked
         #default colors: when it's clicked, it's clickColor, when it's 
         #unclicked, it's data.highlightColor
-        self.color=rgbString(115,107,153)
+        self.color=data.backgroundColor
         self.isClicked=False
-        self.clickColor=data.highlightColor
-        self.clickColor=data.accentColor
+        self.clickColor=rgbString(115,107,153)
+        self.clickFont=data.backgroundColor
     def draw(self,canvas):
         #draws the button and puts the text in the middle
         offset=self.buttonInset
         canvas.create_rectangle(self.x0,self.y0,self.x1,self.y1,
-            fill=self.color,width=2,outline=data.accentColor)
+            fill=self.color,width=2,outline=self.fontColor)
         canvas.create_text((self.x0+self.x1)/2,(self.y0+self.y1)/2,
             fill=self.fontColor,text=self.text,font=self.font)
+    def clicked(self):
+        #when it's clicked, it sets into the screen and changes color
+        self.isClicked=True
+        self.color=self.clickColor
+        self.fontColor=self.clickFont
+        self.x0+=self.buttonInset
+        self.x1+=self.buttonInset
+        self.y0+=self.buttonInset
+        self.y1+=self.buttonInset
+    def unclicked(self):
+        #once it's unclicked, it undoes what clicking does and sets it back 
+        #and resets the color
+        self.color=data.backgroundColor
+        self.fontColor=rgbString(115,107,153)
+        self.x0-=self.buttonInset
+        self.x1-=self.buttonInset
+        self.y0-=self.buttonInset
+        self.y1-=self.buttonInset
+        self.isClicked=False
 
 class Dot(object):
     def __init__(self,x,y,n,color):
@@ -188,7 +207,7 @@ class GlassesDisplay(object):
         self.name=name
         self.shape=shape
         self.price=self.getRealPrice(price)
-        self.image="browseglasses/"+image+".gif"
+        self.image="source/browseglasses/"+image+".gif"
         self.brand=brand
         self.link=link
         self.clicked=False
@@ -402,8 +421,8 @@ def makeResetButton():
     x1=data.width-82
     text="Restart"
     font="Helvetica 30 bold"
-    #data.resetButton=DarkerButton(text=text,font=font,x0=x0,
-        #y0=y0,x1=x1,y1=y1)
+    data.resetButton=DarkerButton(text=text,font=font,x0=x0,
+        y0=y0,x1=x1,y1=y1)
 
 
 ###########################################################
@@ -655,6 +674,12 @@ def goToTryThemOnPhase():
     data.ableToClick=False
     data.browseFramesCantBeClicked=True
 
+def resetProgram():
+    storePhaseBooleans() #tells us the phase in the program we're at
+    makeButtons()
+    initTryOnData()
+    makeImageLabels(data.root)
+
 def doneWithDotsMouseUp(x,y):
     if (clickBrowseFrames(x,y) and data.ableToClick==True and 
         data.browseFramesCantBeClicked==False):
@@ -668,6 +693,8 @@ def doneWithDotsMouseUp(x,y):
         data.ableToClick=True
         data.canSeeBestGlasses=True
         data.browseFramesCantBeClicked=False
+    elif clickInResetButton(x,y) and data.canSeeBestGlasses==True:
+        resetProgram()
     if data.browseFrames==True:
         data.canSeeBestGlasses=False
         browseFramesMouseUp(x,y)
@@ -773,6 +800,15 @@ def browseFramesMouse(x,y):
         if glasses.isClicked(x,y):
             glasses.clicked=True
 
+def clickInResetButton(x,y):
+    x0=data.width-222
+    x1=data.width-82
+    y0=700
+    y1=765
+    return x>x0 and x<x1 and y>y0 and y<y1
+
+
+
 def doneWithDotsMouse(x,y):
     #checks for various clicked buttons and acts accordingly
     if data.showBestGlasses==True and clickBrowseFrames(x,y):
@@ -781,6 +817,8 @@ def doneWithDotsMouse(x,y):
         data.tryThemOnButton.clicked()
     if clickSeeBestGlasses(x,y):
         data.seeBestGlassesButton.clicked()
+    if clickInResetButton(x,y):
+        data.resetButton.clicked()
     if data.browseFrames==True:
         browseFramesMouse(x,y)
     if data.tryThemOn==True:
@@ -884,7 +922,7 @@ def drawInstructionText(canvas):
 
 def drawClickedPhotoIcon(canvas):
     #inset clicked photo icon
-    img=ImageTk.PhotoImage(file="clickedcamera.gif")
+    img=ImageTk.PhotoImage(file="source/clickedcamera.gif")
     data.imageLabel._image_cache=img
     x=940+5
     y=600+5
@@ -892,7 +930,7 @@ def drawClickedPhotoIcon(canvas):
 
 def drawPhotoIcon(canvas):
     #the button to take a photo
-    img=ImageTk.PhotoImage(file="camera.gif")
+    img=ImageTk.PhotoImage(file="source/camera.gif")
     data.imageLabel._image_cache=img
     x=940
     y=600
@@ -934,7 +972,7 @@ def drawDotInstructions(canvas):
 #draws the little picture of the dude I drew to show people how to 
 #drag dots
 def drawInstructionImage(canvas):
-    img=ImageTk.PhotoImage(file="tpFace.gif")
+    img=ImageTk.PhotoImage(file="source/tpFace.gif")
     data.imageLabel._image_cache=img
     x=90+715
     y=190
@@ -947,7 +985,7 @@ def drawFaceShapeScreen(canvas):
     text1="Your face shape is"
     text2=data.faceShape[0].upper()+data.faceShape[1:]
     filename=str(data.faceShape)+".txt"
-    writeup=readFile("shapes/"+filename)
+    writeup=readFile("source/shapes/"+filename)
     font1="Helvetica 50 "
     font2="Avenir 170 bold"
     y0=100
@@ -978,7 +1016,7 @@ def drawFaceShapeWriteup(canvas,writeup):
 
 def drawBestGlassesScreen(canvas):
     #finds the writeup for the person's face shape
-    filepath="glassesrecs/"+data.faceShape+".txt"
+    filepath="source/glassesrecs/"+data.faceShape+".txt"
     writeup=readFile(filepath)
     font="Helvetica 90 bold"
     #finds the suggested frames for the person
@@ -991,11 +1029,11 @@ def drawBestGlassesScreen(canvas):
     drawGlassesWriteup(canvas,writeup)
     data.browseFramesButton.draw(canvas)
     data.tryThemOnButton.draw(canvas)
-    #data.resetButton.draw(canvas)
+    data.resetButton.draw(canvas)
 
 def drawGlassesImage(canvas):
     #draws the photo I found for the person's glasses recommendation
-    filename="recphotos/"+data.faceShape+".gif"
+    filename="source/recphotos/"+data.faceShape+".gif"
     img=ImageTk.PhotoImage(file=filename)
     data.imageLabel._image_cache=img
     x=75
@@ -1034,7 +1072,7 @@ def drawBrowseFramesPageText(canvas):
 
 def drawOtherGlassesPairs(canvas):
     y0=170
-    filename="glassespics/all"+data.faceShape+".gif"
+    filename="source/glassespics/all"+data.faceShape+".gif"
     #glassespics/alloval.gif
     img=ImageTk.PhotoImage(file=filename)
     data.imageLabel3._image_cache=img
@@ -1064,13 +1102,13 @@ def drawSelectedPair(canvas):
 
 def drawPlayIcon(canvas):
     if data.shadedPlayButton==False: #the regular play button gets drawn
-        img=ImageTk.PhotoImage(file="play.gif")
+        img=ImageTk.PhotoImage(file="source/play.gif")
         data.imageLabel2._image_cache=img
         x=370
         y=645
         canvas.create_image(x,y,anchor="nw",image=img)
     else: #the clicked play button gets drawn
-        img=ImageTk.PhotoImage(file="clickplay.gif")
+        img=ImageTk.PhotoImage(file="source/clickplay.gif")
         data.imageLabel2._image_cache=img
         x=370+5
         y=645+5
@@ -1082,14 +1120,14 @@ def drawPauseIcon(canvas):
     elif data.cameraClickedTryOn==True:
         drawClickedCameraButton(canvas)  #clicked if it's clicked
     else:  #draws the camera icon
-        img=ImageTk.PhotoImage(file="camera.gif")
+        img=ImageTk.PhotoImage(file="source/camera.gif")
         data.imageLabel2._image_cache=img
         x=370
         y=645
         canvas.create_image(x,y,anchor="nw",image=img)
 
 def drawClickedCameraButton(canvas): #draws clicked version of camera icon
-    img=ImageTk.PhotoImage(file="clickedcamera.gif")
+    img=ImageTk.PhotoImage(file="source/clickedcamera.gif")
     data.imageLabel2._image_cache=img
     x=370+5
     y=645+5
@@ -1188,7 +1226,7 @@ def drawAll(canvas):
 ###########################################################
 
 def csvToGlassesDisplayObjects():
-    filename="Glasses.csv" #reads in the glasses
+    filename="source/Glasses.csv" #reads in the glasses
     data.glassesForRound, data.glassesForSquare=[], []
     data.glassesForOval, data.glassesForHeart=[], []
     with open(filename, "rt") as f:
@@ -1238,10 +1276,13 @@ def detect(img, cascade):
 
 def putOnGlasses(frame):
     scale=data.glassesScale #places the glasses on the user's face
-    filename="glassespics/"+data.faceShape+str(data.glassesPair)+".png"
+    filename="source/glassespics/"+data.faceShape+str(data.glassesPair)+".png"
     #filename="glassespics/oval4.png"
     glasses=cv2.imread(filename,-1)
-    glasses=cv2.resize(glasses,(0,0),fx=scale,fy=scale)
+    try:
+        glasses=cv2.resize(glasses,(0,0),fx=scale,fy=scale)
+    except:
+        glasses=glasses
     w, h=glasses.shape[1], glasses.shape[0]
     y0=data.glassesy-float(h)/2
     y1=data.glassesy+float(h)/2
@@ -1330,7 +1371,7 @@ def getGlassesScale(frame):
 def detectFace(cvFrame):
     #classifies faces, so it knows what to look for
     face_cascade =(
-        cv2.CascadeClassifier('haarcascades/haarcascade_frontalface_alt.xml'))
+        cv2.CascadeClassifier('source/haarcascades/haarcascade_frontalface_alt.xml'))
     gray=cv2.cvtColor(cvFrame,cv2.COLOR_BGR2GRAY)
     faces=face_cascade.detectMultiScale(gray, 1.3, 5)
     biggestFaceArea=0
@@ -1357,8 +1398,8 @@ def updateTryOnImage(): #gets new frame from webcam feed every time it's called
     ret,img=cap.read()
     frame=cv2.flip(img,1)
     data.frameCounter=0
-    eyes="haarcascades/haarcascade_eye.xml"
-    face="haarcascades/haarcascade_frontalface_alt.xml"
+    eyes="source/haarcascades/haarcascade_eye.xml"
+    face="source/haarcascades/haarcascade_frontalface_alt.xml"
     data.eyeCascade=cv2.CascadeClassifier(eyes)
     data.faceCascade=cv2.CascadeClassifier(face)
     data.glassesx,data.glassesy=getEyeXAndY(frame)
@@ -1459,7 +1500,7 @@ def makeButtons(): #makes every button :)
     makeSeeBestGlassesButton()
     makeBrowseFramesButton()
     makeTryThemOnButton()
-    #makeResetButton()
+    makeResetButton()
 
 def makeImageLabels(root):
     #you need an image label for every image per screen and one of my screens
@@ -1484,8 +1525,8 @@ def initTryOnData():
     data.glasses=None
     data.glassesScale=1
     data.glassesTheta=0
-    eyes="haarcascades/haarcascade_eye.xml"
-    face="haarcascades/haarcascade_frontalface_alt.xml"
+    eyes="source/haarcascades/haarcascade_eye.xml"
+    face="source/haarcascades/haarcascade_frontalface_alt.xml"
     data.eyeCascade=cv2.CascadeClassifier(eyes)
     data.faceCascade=cv2.CascadeClassifier(face)
     data.glassesx,data.glassesy=width/2,height/2
@@ -1494,7 +1535,6 @@ def initTryOnData():
     data.glassesPair=0
     data.tryOnImage=None
     data.frameCounter=0
-
 
 def run():
     root=tk.Tk() #where it all begins :')
@@ -1505,6 +1545,7 @@ def run():
     storePhaseBooleans() #tells us the phase in the program we're at
     makeButtons()
     initTryOnData()
+    data.root=root
     canvas=Canvas(root,width=data.width,height=data.height)
     canvas.bind("<Button-1>",onMouseDown)
     canvas.bind("<B1-Motion>",clickAndDrag)
