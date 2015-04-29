@@ -22,10 +22,15 @@ def areSimilarRatios(ratioA,ratioB):
     allowedRatioDifference=0.2
     return abs(ratioA-ratioB)<=allowedRatioDifference
 
+def areSimilarSquareRatios(ratioA,ratioB):
+    squareMaxDifference=0.1
+    return ratioA-ratioB<=squareMaxDifference
+
 def isHeartFace(faceDimensions):
     forehead,jaw,faceLength,faceWidth=faceDimensions
     #A face is heart shaped if the forehead is significantly wider than the jaw.
     foreheadJawRatio=1.0*forehead/jaw
+    print foreheadJawRatio
     differentSizeRatio=1.24 #chosen based on tests
     #checking if the forehead is significantly the widest part of the face
     return foreheadJawRatio>differentSizeRatio
@@ -44,7 +49,7 @@ def isSquareFace(faceDimensions):
     forehead,jaw,faceLength,faceWidth=faceDimensions
     foreheadJawRatio=1.0*forehead/jaw
     idealSquareForeheadJawRatio=1.0
-    return areSimilarRatios(foreheadJawRatio,idealSquareForeheadJawRatio)
+    return areSimilarSquareRatios(foreheadJawRatio,idealSquareForeheadJawRatio)
 
 def getFaceShape(faceDimensions):
     #heart is the next distinctive, if the forehead is the widest, that
@@ -679,6 +684,7 @@ def resetProgram():
     makeButtons()
     initTryOnData()
     makeImageLabels(data.root)
+    resetData()
 
 def doneWithDotsMouseUp(x,y):
     if (clickBrowseFrames(x,y) and data.ableToClick==True and 

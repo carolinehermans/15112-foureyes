@@ -1,0 +1,33 @@
+Date     Time Spent        Task
+
+4/1      1 hour            drawing in opencv
+4/2      2 hours           face detection
+4/3      3 hours           doing the dots in opencv around the face
+4/4      2.5 hours         interfacing opencv and tkinter
+4/8      2 hours           converting the face recognition to the tkinter canvas
+         1 hour            trying to figure out click and drag in raw tkinter
+4/9      1 hour            actually figuring out click and drag in raw tkinter yayyy
+4/10     2 hours           doing oopy dots with click and drag 
+	 2 hours	   getting my face shape algorithm working YES
+4/12     3.5 hours         getting the UI all hooked up for the face shape algorithm 
+			   and the dots with face detection
+4/13	 5 hours	   now all my code thus far has a nice UI
+ 	 1 hour		   more research about glasses and face shape
+4/19	 1 hour  	   face shape glasses research, did write-ups, started csv
+	 3 hours           made glasses recommendation screens, clickable try them on 			           and browse frames buttons which surprisingly took forever
+			   also all write-ups and images found and implemented
+4/20	 2 hours	   cleaned up/organized my code a LOT including mouse and draw 				   functions and commented everything, it was getting messy
+	 3 hours	   added to csv, designed and formatted “frames for you” and “try 			   them on” UI screens with working back buttons and page buttons
+4/21	 2 hours 	   RESPONSIVE BUTTONS INSTEAD OF JUST RECTANGLES OH DEAR GOD
+	 1 hour 	   more UI + starting on “try them on”
+4/24	 5 hours	   try on is workingish!
+4/25	 5 hours 	   try on is niiiiice
+	 2 hours 	   is it still 4/25 if it’s 1AM
+4/26	 2 hours	   oh my god i fixed the design and the UI bugs so well 
+	 2 hours	   redid a bunch of the try on images
+4/27	 4 hours	   all of browse frames is perf
+4/28	 1 hours  	   the reset button works :) and final polishing is done.
+		   		
+Total as of TP1: 24 hours
+Total as of TP2: 36 hours
+Total as of TP3: 59 hours! 
