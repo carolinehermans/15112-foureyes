@@ -1,10 +1,9 @@
 # FourEyes
-FourEyes is a tool to help people decide which glasses will look best on them. There are four stages to the program.
-
-1. Uses the ratios between six key points on the user’s face to calculate the user’s primary face shape 
-2. Uses that information to recommend a flattering glasses style
-3. Allows users to try on several frames in that style with face tracking
-4. Presents the user with a gallery of commercially available frames in that style
+FourEyes uses the facial geometry of users to help them choose the most flattering glasses. 
+First, it uses the ratios between six key points on the user’s face to calculate the user’s primary face shape.
+Then, it uses that information to recommend a flattering glasses style.
+Next, FourEyes allows users to try on several frames in that style with face tracking.
+Finally, it  presents the user with a gallery of commercially available frames in that style.
 
 All calculations and recommendations are based on extensive research, sources included in sources.txt
 
